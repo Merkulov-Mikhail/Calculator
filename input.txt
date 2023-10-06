@@ -1,4 +1,4 @@
-psuh 3000
+push 3000
 push 3
 div
 push 700
