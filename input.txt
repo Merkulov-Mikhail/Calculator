@@ -1,0 +1,9 @@
+psuh 3000
+push 3
+div
+push 700
+in
+div
+sub
+out
+hlt
