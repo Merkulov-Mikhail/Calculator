@@ -1,8 +1,64 @@
-#include "config.h"
+//#include "config.h"
 
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
+//#include <string.h>
+//#include <stdio.h>
+//#include <math.h>
+
+
+#define ADD_COMMAND(name, num, nargs, ...)                                                                          \
+    if ( !strcmp(command, #name) ){\
+        if (!nargs){\
+            *(char*) (commandSegment + usedBytes++) = num;\
+            printf("[%d]" ##name "COMMAND\n", step);\
+        }\
+        else{\
+            char buf[MAX_LINE_LENGTH] = {};\
+            retValue = fscanf(input, "%s", buf);\
+\
+            if ( retValue <= 0 ){ \
+                printf("[%d] ERROR:"##name " with no argument\n", step);\
+                break;\
+            }\
+\
+            destroyCommentary( buf );\
+\
+            res = parseArgument( buf );\
+            /*\
+                See ARGUMENT_RESPONSE\
+                If res is not present in ARGUMENT_RESPONSE, than res contains register address\
+            */\
+            switch (res){\
+\
+                case LINE_ERROR:\
+                    printf("[%d] ERROR: No argument or line limit exceeded", step);\
+                    return;\
+\
+                case BAD_ARGUMENT:\
+                    printf("[%d] ERROR: Incorrect argument (%s)", step, symb);\
+                    return;\
+\
+                case UNKNOWN_DATA:\
+                    printf("[%d] ERROR: Unknown data after argument", step);\
+                    return;\
+\
+                case IS_NUMBER:\
+                    *(char*)   (commandSegment + usedBytes++) = num | I_BIT;\
+                    *(double*) (commandSegment + usedBytes)   = elem;\
+                    usedBytes += sizeof(double);\
+                    break;\
+\
+                default:\
+                    *(char*) (commandSegment + usedBytes++) = num | R_BIT;\
+                    *(char*) (commandSegment + usedBytes++) = res;\
+                    break;\
+\
+            }\
+        }\
+        printf("[%d]"##name" COMMAND\n", step);\
+    }\
+    else                                                                                \
+
+
 
 
 void destroyCommentary( char* arr );
@@ -36,172 +92,8 @@ int main(){
             printf("ERROR/EOF\n");
             break;
         }
-
-        if      ( !strcmp(command, "add") ){
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::ADD;
-
-            printf("[%d] ADD COMMAND\n", step);
-        }
-
-        else if ( !strcmp(command, "sub") ){
-
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::SUB;
-            printf("[%d] SUB COMMAND\n", step);
-        }
-
-        else if ( !strcmp(command, "mul") ){
-
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::MUL;
-            printf("[%d] MUL COMMAND\n", step);
-        }
-
-        else if ( !strcmp(command, "div") ){
-
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::DIV;
-            printf("[%d] DIV COMMAND\n", step);
-        }
-
-        else if ( !strcmp(command, "push")){
-
-            char buf[MAX_LINE_LENGTH] = {};
-            retValue = fscanf(input, "%s", buf);
-
-            if ( retValue <= 0 ){ // no argument -> wrong push
-                printf("[%d] ERROR: push with no argument\n", step);
-                break;
-            }
-
-            destroyCommentary( buf );
-
-            double elem = 0;
-
-            retValue = sscanf(buf, "%lf", &elem); // if argument is a immediate const
-
-            if ( retValue ){
-
-                if ( sscanf(buf, "%*s %*s") == 2 ){ // catching qweasd
-
-                    printf("[%d] ERROR: Unknown data after argument", step);
-                    break;
-                }
-                else{
-                    *(char*)   (commandSegment + usedBytes++) = COMMANDS::PUSH | I_BIT;
-                    *(double*) (commandSegment + usedBytes)   = elem;
-                    usedBytes += sizeof(double);
-                }
-            }
-
-            else{
-
-                char symb[3] = {};
-
-                if ( sscanf(buf, "%s", symb) ){
-
-                    if ( symb[0] == 'r' && symb[2] == 'x' && symb[1] - 'a' < 4 ){ // push r?x qweasd
-
-                        if ( sscanf(buf, "%*s %*s") == 2 ){ // catching qweasd
-
-                            printf("[%d] ERROR: Unknown data after argument", step);
-                            break;
-
-                        }
-                        else{ // no qweasd, all Good
-                            *(char*) (commandSegment + usedBytes++) = COMMANDS::PUSH | R_BIT;
-                            *(char*) (commandSegment + usedBytes++) = symb[1] - 'a';
-                        }
-                    }
-
-                    else{ // not a valiable register
-
-                        printf("[%d] ERROR: Incorrect argument (%s)", step, symb);
-                        break;
-                    }
-                }
-                else{
-
-                    printf("[%d] ERROR: No argument or line limit exceeded", step);
-                    break;
-                }
-            }
-            printf("[%d] PUSH COMMAND\n", step);
-
-        }
-
-        else if ( !strcmp( command, "pop" ) ){
-            char buf[MAX_LINE_LENGTH] = {};
-            retValue = fscanf(input, "%s", buf);
-
-            if ( retValue <= 0 ){ // no argument -> wrong push
-                printf("[%d] ERROR: pop with no argument\n", step);
-                break;
-            }
-
-            destroyCommentary( buf );
-            char symb[3] = {};
-
-            if ( sscanf(buf, "%s", symb) ){
-
-                if ( symb[0] == 'r' && symb[2] == 'x' && symb[1] - 'a' < 4 ){ // pop r?x qweasd
-
-                    if ( sscanf(buf, "%*s %*s") == 2 ){ // catching qweasd
-
-                        printf("[%d] ERROR: Unknown data after argument", step);
-                        break;
-
-                    }
-                    else{ // no qweasd, all Good
-                        *(char*) (commandSegment + usedBytes++) = COMMANDS::POP | R_BIT;
-                        *(char*) (commandSegment + usedBytes++) = symb[1] - 'a';
-                    }
-                }
-
-                else{ // not a valiable register
-
-                    printf("[%d] ERROR: Incorrect argument (%s)", step, symb);
-                    break;
-                }
-            }
-            else{
-
-                printf("[%d] ERROR: No argument or line limit exceeded", step);
-                break;
-            }
-
-            printf("[%d] POP COMMAND\n", step);
-
-        }
-
-        else if ( !strcmp(command, "sqrt") ){
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::SQRT;
-            printf("[%d] SQRT COMMAND\n", step);
-        }
-        else if ( !strcmp(command, "sin")){
-
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::SIN;
-            printf("[%d] SIN COMMAND\n", step);
-        }
-        else if ( !strcmp(command, "cos")){
-
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::COS;
-            printf("[%d] COS COMMAND\n", step);
-        }
-        else if ( !strcmp(command, "in")){
-
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::IN;
-            printf("[%d] IN COMMAND\n", step);
-        }
-        else if ( !strcmp(command, "out")){
-
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::OUT;
-            printf("[%d] OUT COMMAND\n", step);
-        }
-        else if ( !strcmp(command, "hlt")){
-
-            *(char*) (commandSegment + usedBytes++) = COMMANDS::HLT;
-            printf("[%d] HLT COMMAND\n", step);
-        }
-        else {
-
+        #include "commands.h"
+        /*else*/{
             printf("[%d] UNKNOWN COMMAND %s\n", step, command);
             break;
         }
@@ -232,4 +124,44 @@ void destroyCommentary( char* arr ){
 
 void addCharByte( void* dest, char value ){
     *(char*) dest = value;
+}
+
+
+int parseArgument(const char* buf){
+    double elem = 0;
+
+    retValue = sscanf(buf, "%lf", &elem); // if argument is a immediate const
+
+    if ( retValue ){
+
+        if ( sscanf(buf, "%*s %*s") == 2 ) // catching qweasd
+            return UNKNOWN_DATA;
+
+        else
+            return IS_NUMBER;
+    }
+
+    else{
+
+        char symb[3] = {};
+
+        if ( sscanf(buf, "%s", symb) ){
+
+            if ( symb[0] == 'r' && symb[2] == 'x' && symb[1] - 'a' < 4 ){ // push r?x qweasd
+
+                if ( sscanf(buf, "%*s %*s") == 2 ) // catching qweasd
+                    return UNKNOWN_DATA;
+
+                else // no qweasd, all Good
+                    return symb[1] - 'a';
+            }
+
+            else{ // not a valiable register
+                return BAD_ARGUMENT;
+            }
+        }
+        else{
+            return LINE_ERROR;
+        }
+    }
 }

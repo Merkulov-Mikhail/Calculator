@@ -7,8 +7,8 @@
 #include <math.h>
 #include <sys/stat.h>
 
-
 const double PRECISION = 1000;
+
 
 elem_t _add_( elem_t first, elem_t second );
 elem_t _sub_( elem_t first, elem_t second );
@@ -80,7 +80,6 @@ int main(){
 
         else if ( command == COMMANDS::PUSH | I_BIT ){
 
-            double elem = *( double* ) ( processor.cs + processor.ip );
             stackPush( stk, ( elem_t ) elem * PRECISION );
             processor.ip += sizeof( double );
         }

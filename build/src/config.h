@@ -36,3 +36,12 @@ enum COMMANDS{
     SIN ,
     COS ,
 };
+
+
+enum ARGUMENT_RESPONSE{
+    LINE_ERROR   = -4,
+    BAD_ARGUMENT = -3,
+    UNKNOWN_DATA = -2,
+    IS_NUMBER    = -1,
+
+}
