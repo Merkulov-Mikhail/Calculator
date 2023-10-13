@@ -33,9 +33,9 @@ int main(){
     int retValue  = 0;
     int command   = 0;
 
-    SPU processor;
+    SPU processor = {};
     SPUCtor( &processor );
-    stack* stk = processor.stk;
+    stack* stk = &processor.stk;
 
     fileSize = fread( processor.cs, sizeof( char ), fileSize, file );
 
@@ -78,14 +78,14 @@ int main(){
             }
         }
 
-        else if ( command == COMMANDS::PUSH | I_BIT ){
+        else if ( command == (COMMANDS::PUSH | I_BIT) ){
 
             double elem = *( double* ) ( processor.cs + processor.ip );
             stackPush( stk, ( elem_t ) elem * PRECISION );
             processor.ip += sizeof( double );
         }
 
-        else if ( command == COMMANDS::PUSH | R_BIT ){
+        else if ( command == (COMMANDS::PUSH | R_BIT) ){
 
             char reg = *( char* ) ( processor.cs + processor.ip );
             switch ( reg ){
@@ -104,7 +104,7 @@ int main(){
             }
             processor.ip++;
         }
-        else if ( command == COMMANDS::POP | R_BIT ){
+        else if ( command == (COMMANDS::POP | R_BIT) ){
 
             char reg = *( char* ) ( processor.cs + processor.ip );
             elem_t value = 0;
@@ -212,7 +212,7 @@ elem_t _div_( elem_t first, elem_t second ){
 }
 
 void SPUCtor( SPU* spu ){
-    stackCtor( spu->stk );
+    stackCtor( &spu->stk );
     spu->cs  = calloc( sizeof( char ), RAM_SIZE );
     spu->ip  = 0;
     spu->rax = 0;

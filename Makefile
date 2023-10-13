@@ -1,4 +1,4 @@
-COMPILER=g++
+COMPILER=g++ -O0 -g -Wno-pointer-arith
 
 
 .PHONY: all
