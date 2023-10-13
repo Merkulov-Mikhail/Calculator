@@ -2,21 +2,32 @@
 
 
 
-const char* INPUT_FILE    = "input.txt";
-const char* ASSEMBLY_FILE = "ass.ass";
+const char* INPUT_FILE       = "input.txt";
+const char* ASSEMBLY_FILE    = "ass.ass";
+const char* DISASSEMBLY_FILE = "disass.disass";
+
+
+const int VERSION         = 0;
+
+const short I_BIT         = 1 << 5;
+const short R_BIT         = 1 << 6;
+
+const int MAX_LINE_LENGTH = 20;
+
+const int RAM_SIZE = 1024 * 1024;
+
+
+#undef IN
+#undef OUT
 
 
 enum COMMANDS{
-    HLT = -1,
+    HLT = 0,
 
-    BASIC_COMMANDS = 1 << 4 ,
-    IN ,
-    OUT,
-
-    STACK_COMMANDS = 1 << 10,
     PUSH,
-
-    CALC_COMMANDS  = 1 << 12,
+    POP ,
+    IN  ,
+    OUT ,
     ADD ,
     SUB ,
     MUL ,
