@@ -5,8 +5,23 @@ push 700
 in
 div
 sub
+pop rcx
+push rcx
 out
+push rcx
+push rcx
+pop rbx
+pop rax
 push rax
+push rax
+div
+:privet
+:hello
+pop rbx
 push rbx
-pop  rax
+push rbx
+add
+jmp privet
+jmp hello
+out
 hlt
