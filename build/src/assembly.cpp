@@ -14,10 +14,16 @@
     else\
 
 
-static int loadLabels(Label* labels, size_t *size, FILE* input)
+
 
 void destroyCommentary(   char* arr );
 int  parseArgument( const char* buf );
+
+
+struct LabelPoints{
+    uint64_t     pc;
+    char* labelName;
+};
 
 
 int main(){
@@ -42,14 +48,11 @@ int main(){
 
     char command[MAX_LINE_LENGTH] = {};
 
-    size_t size   = LABEL_COUNT;
     Label* labels = ( Label* ) calloc( sizeof( Label ), LABEL_COUNT );
+    int labelCounter = 0;
 
-    int res = loadLabels(labels, &size, input);
-
-    if ( res ){
-        return -1;
-    }
+    LabelPoints* labelPoints = ( LabelPoints* ) calloc( sizeof( labelPoints ), LABEL_COUNT );
+    int labelPointsCounter = 0;
 
     while ( 1 ){
 
@@ -66,6 +69,17 @@ int main(){
             break;
         }
 
+        if ( command[0] == ':' ){
+
+            labels[labelCounter].pi   = usedBytes;
+
+            labels[labelCounter].name = ( char* ) calloc( sizeof( char ), strlen(command) );
+            strncpy(labels[labelCounter].name, command + 1, strlen(command));
+
+            labelCounter++;
+
+            continue;
+        }
         #include "commands.h"
         /*else*/{
             printf("[%d] UNKNOWN COMMAND %s\n", step, command);
@@ -111,7 +125,13 @@ int main(){
                             doBreak = 1;
                             break;
                         case 1:
-                            uint64_t address = getFromLabelAddress()
+
+                            labelPoints[labelPointsCounter].pc = usedBytes;
+                            labelPoints[labelPointsCounter].labelName = (char*) calloc( sizeof(char), strlen(labelName) );
+
+                            strncpy(labels[labelPointsCounter].name, labelName, strlen(command));
+
+                            labelPointsCounter++;
                             usedBytes += sizeof( double );
 
                             continue;
@@ -237,46 +257,3 @@ int parseArgument(const char* buf){
     }
 }
 
-
-static int loadLabels(Label* labels, size_t *size, FILE* input){
-
-    char command[MAX_LINE_LENGTH] = {};
-
-    uint64_t retValue = 0;
-    int labelCounter = 0;
-
-    while ( 1 ){
-        retValue = fgets(command, MAX_LINE_LENGTH, input);
-
-        if ( command[0] == ':' ){
-
-            labels[labelCounter].pi   = usedBytes;
-
-            labels[labelCounter].name = ( char* ) calloc( sizeof( char ), strlen(command) );
-            strncpy(labels[labelCounter].name, command + 1, strlen(command));
-
-            labelCounter++;
-            if ( labelCounter == *size ){
-
-                *size *= 2;
-                void* ptr = realloc(labels, *size);
-
-                if (ptr){
-
-                    labels = ptr;
-                    continue;
-
-                }
-
-                printf("ERROR: too much labels");
-                return -1;
-
-            }
-
-            continue;
-        }
-
-        if (!retValue)
-            return 0;
-    }
-}
