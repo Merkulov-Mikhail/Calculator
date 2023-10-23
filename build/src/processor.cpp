@@ -93,7 +93,7 @@ int main(){
 
             processor.ip += sizeof( double );
             #ifdef LOGGING
-                printf( "[%d] PUSHED %lf INTO STACK", step, elem );
+                printf( "[%d] PUSHED %lf INTO STACK\n", step, elem );
             #endif
         }
 
@@ -125,7 +125,7 @@ int main(){
             processor.ip++;
 
             #ifdef LOGGING
-                printf( "[%d] PUSHED INTO STACK FROM %d REGISTER", step, reg );
+                printf( "[%d] PUSHED INTO STACK FROM %d REGISTER\n", step, reg );
             #endif
         }
         else if ( command == (COMMANDS::POP | R_BIT) ){
@@ -158,9 +158,14 @@ int main(){
             if ( res )
                 break;
             #ifdef LOGGING
-                printf( "[%d] PUSHED INTO STACK FROM %d REGISTER", step, reg );
+                printf( "[%d] PUSHED INTO STACK FROM %d REGISTER\n", step, reg );
             #endif
             processor.ip++;
+        }
+        else if ( command == COMMANDS::JMP ){
+
+            uint64_t pos = *( uint64_t* ) ( processor.cs + processor.ip );
+            processor.ip = pos;
         }
 
         else if ( command == COMMANDS::SQRT ){

@@ -15,7 +15,6 @@
 
 
 
-
 void destroyCommentary(   char* arr );
 int  parseArgument( const char* buf );
 
@@ -42,9 +41,14 @@ int main(){
     int size = RAM_SIZE;
     void* commandSegment = calloc(sizeof(char), size);
 
-    int  usedBytes = 0;
-    int  step      = 1;
-    int  retValue  = 0;
+    // Shows how many bytes have been written in current page
+    int usedBytes       = 0;
+    // Shows how many bytes have been written in total
+    // It is used to write named labels
+    int globalUsedBytes = 0;
+
+    int step            = 1;
+    int retValue        = 0;
 
     char command[MAX_LINE_LENGTH] = {};
 
@@ -129,12 +133,11 @@ int main(){
                             labelPoints[labelPointsCounter].pc = usedBytes;
                             labelPoints[labelPointsCounter].labelName = (char*) calloc( sizeof(char), strlen(labelName) );
 
-                            strncpy(labels[labelPointsCounter].name, labelName, strlen(command));
+                            strncpy(labelPoints[labelPointsCounter].labelName, labelName, strlen(labelName));
 
                             labelPointsCounter++;
                             usedBytes += sizeof( double );
 
-                            continue;
                     }
                 }
                 else if (res == 1){
@@ -201,10 +204,41 @@ int main(){
     }
     fclose(input);
 
-
-    commandSegment = realloc( commandSegment, usedBytes );
     fwrite( commandSegment, sizeof(char), usedBytes, output );
-    fclose(output);
+    for (     int pointsPos = 0; pointsPos < labelPointsCounter; pointsPos++ ) {
+        int foundLabel = 0;
+        for ( int labelsPos = 0; labelsPos < labelCounter;       labelsPos++   ){
+            if ( !strcmp( labels[labelsPos].name, labelPoints[pointsPos].labelName ) ){
+
+                fseek( output, labelPoints[pointsPos].pc, SEEK_SET );
+                fwrite( &( labels[labelsPos].pi ), sizeof(uint64_t), 1, output );
+
+                foundLabel = 1;
+                break;
+            }
+        }
+        if ( !foundLabel ){
+            printf("ERROR: unknown label ( %s )\n", labelPoints[pointsPos].labelName);
+            break;
+        }
+    }
+
+    fclose( output );
+
+    //---------------------------------------------------
+    for ( int pos = 0; pos < labelPointsCounter; pos++ ){
+        free(labelPoints[pos].labelName);
+    }
+
+    free(labelPoints);
+
+    for ( int pos = 0; pos < labelCounter; pos++ ){
+        free(labels[pos].name);
+    }
+
+    free(labels);
+    free(commandSegment);
+    //---------------------------------------------------
 }
 
 

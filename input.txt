@@ -6,6 +6,7 @@ in
 div
 sub
 pop rcx
+
 push rcx
 out
 push rcx
@@ -15,13 +16,14 @@ pop rax
 push rax
 push rax
 div
-:privet
-:hello
 pop rbx
 push rbx
 push rbx
 add
 jmp privet
-jmp hello
+out
+:privet
+push 15
+add
 out
 hlt
