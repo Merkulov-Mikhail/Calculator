@@ -47,7 +47,16 @@
         SQRT,
         SIN ,
         COS ,
+
+        // Make sure, that JMP is THE FIRST command of jumps and JE is THE LAST command of jumps
+        // Any other jmp command should be between JMP and JE
         JMP ,
+
+        JA  ,
+        JAE ,
+        JB  ,
+        JBE ,
+        JNE ,
         JE  ,
     };
 
@@ -62,8 +71,8 @@
 
 
     struct Label{
-        uint64_t pi;
-        char*  name;
+        uint64_t      pi;
+        char*  labelName;
     };
 
 #endif

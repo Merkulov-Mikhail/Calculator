@@ -10,10 +10,27 @@
 const double PRECISION = 1000;
 
 
+#define ADD_JMP_COMMAND( name, func ) \
+    if ( command == (COMMANDS::name | I_BIT) ){\
+        stackPop( stk, &second  );   \
+        stackPop( stk, &first );     \
+                                     \
+        if ( first func second ) {      \
+            uint64_t pos = *( uint64_t* ) ( processor.cs + processor.ip );\
+            processor.ip = pos;      \
+        }                            \
+        else{                        \
+            processor.ip += sizeof( uint64_t );\
+        }                            \
+    }                                \
+    else
+
+
 elem_t _add_( elem_t first, elem_t second );
 elem_t _sub_( elem_t first, elem_t second );
 elem_t _div_( elem_t first, elem_t second );
 elem_t _mul_( elem_t first, elem_t second );
+
 void push( stack* stk, elem_t* first, elem_t* second, elem_t ( *func ) ( elem_t, elem_t ) );
 void SPUCtor( SPU* spu );
 
@@ -30,7 +47,6 @@ int main(){
     stat( ASSEMBLY_FILE, &buf );
     int fileSize = buf.st_size;
 
-    int retValue  = 0;
     int command   = 0;
 
     SPU processor = {};
@@ -38,13 +54,13 @@ int main(){
     stack* stk = &processor.stk;
 
     fileSize = fread( processor.cs, sizeof( char ), fileSize, file );
-
     int step = 0;
     elem_t first = 0, second = 0;
     while ( processor.ip < fileSize ){
 
-        char command = *( char* ) ( processor.cs + processor.ip );
+        command = *( char* ) ( processor.cs + processor.ip );
         processor.ip++;
+
         if      ( command == COMMANDS::ADD ){
 
             push( stk, &first, &second, _add_ );
@@ -85,7 +101,7 @@ int main(){
             }
         }
 
-        else if ( command == (COMMANDS::PUSH | I_BIT) ){
+        else if ( command == ( COMMANDS::PUSH | I_BIT ) ){
 
             double elem = *( double* ) ( processor.cs + processor.ip );
 
@@ -97,7 +113,7 @@ int main(){
             #endif
         }
 
-        else if ( command == (COMMANDS::PUSH | R_BIT) ){
+        else if ( command == ( COMMANDS::PUSH | R_BIT ) ){
 
             char reg = *( char* ) ( processor.cs + processor.ip );
             bool res = 0;
@@ -128,7 +144,7 @@ int main(){
                 printf( "[%d] PUSHED INTO STACK FROM %d REGISTER\n", step, reg );
             #endif
         }
-        else if ( command == (COMMANDS::POP | R_BIT) ){
+        else if ( command == ( COMMANDS::POP | R_BIT ) ){
 
             char reg = *( char* ) ( processor.cs + processor.ip );
             elem_t value = 0;
@@ -157,24 +173,21 @@ int main(){
             }
             if ( res )
                 break;
+
             #ifdef LOGGING
                 printf( "[%d] PUSHED INTO STACK FROM %d REGISTER\n", step, reg );
             #endif
             processor.ip++;
-        }
-        else if ( command == COMMANDS::JMP ){
-
-            uint64_t pos = *( uint64_t* ) ( processor.cs + processor.ip );
-            processor.ip = pos;
-        }
-
-        else if ( command == COMMANDS::SQRT ){
+        } else
+        #include "jmps.h"
+        if ( command == COMMANDS::SQRT ){
 
             stackPop( stk, &first );
             double tmp = first / PRECISION;
             stackPush( stk, ( elem_t ) ( sqrt( tmp ) * PRECISION ) );
+
             #ifdef LOGGING
-                printf( "[%d] ADDED %.3lf TO STACK\n", step, sqrt(tmp) );
+                printf( "[%d] ADDED %.3lf TO STACK\n", step, sqrt( tmp ) );
             #endif
         }
 
@@ -183,7 +196,7 @@ int main(){
             stackPop( stk, &first );
             stackPush( stk, ( elem_t ) ( sin( first ) * PRECISION ) );
             #ifdef LOGGING
-                printf( "[%d] ADDED %.3lf TO STACK\n", step, sin(first) );
+                printf( "[%d] ADDED %.3lf TO STACK\n", step, sin( first ) );
             #endif
         }
 
@@ -192,15 +205,18 @@ int main(){
             stackPop( stk, &first );
             stackPush( stk, ( elem_t ) ( cos( first ) * PRECISION ) );
             #ifdef LOGGING
-                printf( "[%d] ADDED %.3lf TO STACK\n", step, cos(first) );
+                printf( "[%d] ADDED %.3lf TO STACK\n", step, cos( first ) );
             #endif
         }
 
         else if ( command == COMMANDS::IN ){
+            #ifdef LOGGING
+                printf( "USER_INPUT: " );
+            #endif
 
-            printf( "USER_INPUT: " );
             scanf( "%lld", &first );
             stackPush( stk, first * PRECISION );
+
             #ifdef LOGGING
                 printf( "[%d] IN CALL, PUSHED %lf\n", step, first );
             #endif
@@ -209,7 +225,15 @@ int main(){
         else if ( command == COMMANDS::OUT ){
 
             stackPop( stk, &first );
-            printf( "---\n[OUT]: %.3lf\n---\n", first / PRECISION );
+            #ifdef LOGGING
+                printf( "---\n[OUT]: ");
+            #endif
+
+            printf("%.3lf\n", first / PRECISION);
+
+            #ifdef LOGGING
+                printf("\n---\n" );
+            #endif
         }
 
         else if ( command == COMMANDS::HLT ){
@@ -220,11 +244,11 @@ int main(){
         }
 
         else {
-            printf( "[%d] UNKNOWN COMMAND %s\n", step, command );
+            printf( "[%d] UNKNOWN COMMAND %d\n", step, command );
         }
         step++;
         #ifdef LOGGING
-            printf( "current step [%d] (%d)\n", step, command );
+            printf( "current step [%d] ( %d )\n", step, command );
         #endif
     }
     fclose( file );

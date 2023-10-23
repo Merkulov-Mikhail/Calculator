@@ -12,7 +12,7 @@
         int64_t rcx;
         int64_t rdx;
         Label*  labels;
-        int ip;
+        uint64_t ip;
         void* cs;
     };
 

@@ -20,8 +20,11 @@ pop rbx
 push rbx
 push rbx
 add
-jmp privet
+push 10
+push 15
+jb privet
 out
+hlt
 :privet
 push 15
 add
