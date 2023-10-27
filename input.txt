@@ -1,32 +1,28 @@
-push 3000
-push 3
-div
-push 700
-in
-div
-sub
-pop rcx
+    in
+    call factorial
+    out
+    hlt
 
-push rcx
-out
-push rcx
-push rcx
-pop rbx
-pop rax
-push rax
-push rax
-div
-pop rbx
-push rbx
-push rbx
-add
-push 10
-push 15
-jb privet
-out
-hlt
-:privet
-push 15
-add
-out
-hlt
+:factorial
+    pop rax
+
+    push rax
+    push 1
+    jbe preReturn
+
+        push rax
+
+        push rax
+        push 1
+        sub
+
+        call factorial
+
+        mul
+        jmp return
+
+    :preReturn
+        push 1
+
+    :return
+ret

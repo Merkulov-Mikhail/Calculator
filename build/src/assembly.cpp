@@ -107,10 +107,9 @@ int main(){
 
             int doBreak = 0;
 
-            if ( JMP <= comNum && comNum <= JE  ) {
+            if ( JMP <= comNum && comNum <= JE || comNum == CALL  ) {
 
                 double value = 0;
-
                 int res = sscanf( buf, "%d %s", value );
                 *( char* ) ( commandSegment + usedBytes++ ) = comNum | I_BIT;
 

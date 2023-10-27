@@ -1,4 +1,4 @@
-COMPILER=g+++ -O0 -g -Wno-pointer-arith -Wno-conversion
+COMPILER=g+++ -O0 -g -Wno-pointer-arith
 
 
 .PHONY: all

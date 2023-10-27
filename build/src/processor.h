@@ -7,6 +7,7 @@
 
     struct SPU{
         stack stk;
+        stack rs; // recursion stack
         int64_t rax;
         int64_t rbx;
         int64_t rcx;

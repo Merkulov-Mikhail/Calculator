@@ -12,7 +12,6 @@
     #undef LOGGING
 
 
-
     const char* INPUT_FILE       = "input.txt";
     const char* ASSEMBLY_FILE    = "ass.ass";
     const char* DISASSEMBLY_FILE = "disass.disass";
@@ -25,6 +24,7 @@
 
     const int MAX_LINE_LENGTH = 200;
     const int LABEL_COUNT = 1000;
+    const int RECURSION_LIMIT = 1000;
 
     const int RAM_SIZE = 1024 * 1024;
 
@@ -58,6 +58,9 @@
         JBE ,
         JNE ,
         JE  ,
+
+        CALL,
+        RET ,
     };
 
 
